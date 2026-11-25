@@ -126,7 +126,7 @@ dialog.recipe-dialog::backdrop{background:rgba(5,20,19,.58)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--nav-bg:rgba(21,37,36,.88)}}
 :root[data-theme="dark"]{--nav-bg:rgba(21,37,36,.88)}
 main{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
-.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100% - 20px));margin:0;z-index:60;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:6px;border-radius:26px;background:var(--nav-bg);border:1px solid var(--line);box-shadow:0 10px 32px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);transition:background .4s,border-color .4s,box-shadow .4s}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(520px,calc(100% - 20px));margin:0;z-index:60;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;padding:6px;border-radius:26px;background:var(--nav-bg);border:1px solid var(--line);box-shadow:0 10px 32px rgba(0,0,0,.2);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);transition:background .4s,border-color .4s,box-shadow .4s}
 .tabs button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:9px 2px 8px;border:0;background:transparent;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.01em;color:var(--muted);transition:transform .15s,background .25s,color .25s,box-shadow .25s;-webkit-tap-highlight-color:transparent}
 .tabs button svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
 .tabs button:active{transform:scale(.92)}
@@ -356,6 +356,10 @@ details.sh-live[open] summary::after{transform:rotate(45deg)}
 #editDialog input#editName,#editDialog input#editDate{width:100%}
 .qty-badge{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;border:1px solid rgba(53,242,220,.55);color:var(--accent);font-size:.8rem;font-weight:800;vertical-align:middle}
 .act{flex-wrap:wrap}
+
+/* --- Prix automatiques --- */
+.price-note{display:block;margin-top:2px;font-size:.74rem;font-weight:500;color:var(--muted);line-height:1.3}
+.shopping-price.auto input{border-color:rgba(53,242,220,.55)}
 </style>
 </head>
 <body class="on-home">
@@ -364,10 +368,9 @@ details.sh-live[open] summary::after{transform:rotate(45deg)}
 <p class="fridge-badge" id="fridgeBadge" hidden></p>
 <p class="sub" id="sum">Scanne un produit, note sa date, on s’occupe du reste.</p>
 <nav class="tabs" aria-label="Navigation principale">
-  <button type="button" class="tab" data-tab="home" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/></svg><span>Accueil</span></button>
   <button type="button" class="tab" data-tab="fridge" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M6 10.5h12"/><path d="M9.5 6v1.5M9.5 13v3"/></svg><span>Mon frigo</span></button>
-  <button type="button" class="tab" data-tab="profile" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c.8-4 3.8-6 7.5-6s6.700 2 7.500 6"/></svg><span>Profil</span></button>
   <button type="button" class="tab" data-tab="shopping" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 3.5h3l2.2 11h10.600l2.200-8H6.200"/><circle cx="9.500" cy="19.500" r="1.500"/><circle cx="17" cy="19.500" r="1.500"/></svg><span>Courses</span><span id="shoppingTabCount" class="tab-count" hidden></span></button>
+  <button type="button" class="tab" data-tab="profile" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c.8-4 3.8-6 7.5-6s6.700 2 7.500 6"/></svg><span>Profil</span></button>
 </nav>
 
 <section id="fridgeTab">
@@ -457,6 +460,8 @@ details.sh-live[open] summary::after{transform:rotate(45deg)}
       <select id="acFridgeSel" class="ac-select" aria-label="Frigo actif"></select>
 
       <div id="acFridgeBox" hidden>
+        <p class="sh-copy" id="acPersonalNote" hidden>🔒 Frigo privé : seul ton compte y a accès, sur tous tes appareils. Pour partager avec tes proches, crée un frigo partagé juste en dessous.</p>
+        <div id="acShared">
         <label for="acInvEmail">Inviter par email</label>
         <div class="sh-row"><input id="acInvEmail" type="email" inputmode="email" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="proche@exemple.fr"><button type="button" id="acInvite">Inviter</button></div>
         <p class="sh-copy" style="margin:8px 0 0">Ton application de mail s’ouvre avec un lien à envoyer. La personne crée un compte ou se connecte, puis accède à ce frigo. Le lien marche une fois, pendant 7 jours.</p>
@@ -475,6 +480,7 @@ details.sh-live[open] summary::after{transform:rotate(45deg)}
           <button type="button" id="acNewCode" style="flex-direction:row;justify-content:center;padding:12px">Changer le code</button>
         </div>
         <button type="button" class="sh-leave" id="acLeave">Quitter ce frigo</button>
+        </div>
       </div>
 
       <details class="sh-live" id="acNew">
@@ -483,7 +489,7 @@ details.sh-live[open] summary::after{transform:rotate(45deg)}
           <label for="acFridgeName">Nom du nouveau frigo</label>
           <input id="acFridgeName" maxlength="40" placeholder="Ex. Maison, Coloc, Mamie…">
           <button type="button" class="main" id="acCreate">Créer un frigo partagé</button>
-          <p class="sh-copy" id="acCopyHint" style="margin:10px 0 0">Le contenu de ton frigo actuel sur cet appareil est copié dedans.</p>
+          
           <label for="f-code">Ou rejoindre avec un code</label>
           <div class="sh-row"><input id="f-code" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABCD2345"><button type="button" id="shJoin">Rejoindre</button></div>
         </div>
@@ -529,6 +535,7 @@ details.sh-live[open] summary::after{transform:rotate(45deg)}
     <button type="submit">Ajouter</button>
   </form>
   <ul id="shoppingItems" class="shopping-items"></ul>
+  <button type="button" id="refreshPrices" class="ac-link" style="margin:8px 0 0">Chercher les prix des articles sans prix</button>
   <p id="shoppingEmpty" class="empty shopping-empty" hidden>Ta liste est vide. Les produits consommés ou jetés apparaîtront ici.</p>
   <footer class="shopping-summary">
     <div><strong>Total estimé</strong><p id="shoppingSummaryText">Coche des articles et renseigne leur prix.</p></div>
@@ -640,7 +647,7 @@ let me=null,meName='',fridges=[],members={},invites=[];
 const nk=k=>String(k).replace(/[^A-Za-z0-9_-]/g,'').slice(0,40);
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 const itemRow=(fid,i)=>({fridge_id:fid,id:Number(i.id),qty:Math.min(99,Math.max(1,Math.round(Number(i.qty))||1)),code:String(i.code||'').slice(0,40),name:String(i.name).slice(0,120),expiry_date:DATE_RE.test(String(i.date||''))?i.date:null});
-const shopRow=(fid,e)=>({fridge_id:fid,id:String(e.id).slice(0,60),name:String(e.name).slice(0,80),price:(e.price===''||e.price==null||isNaN(Number(e.price)))?null:Number(e.price),checked:e.checked===true});
+const shopRow=(fid,e)=>({fridge_id:fid,id:String(e.id).slice(0,60),name:String(e.name).slice(0,80),code:e.code?String(e.code).replace(/\D/g,'').slice(0,40)||null:null,price_src:['auto','manual','none'].includes(e.priceSrc)?e.priceSrc:null,price_note:e.priceNote?String(e.priceNote).slice(0,160):null,price:(e.price===''||e.price==null||isNaN(Number(e.price)))?null:Number(e.price),checked:e.checked===true});
 const shoppingDeleted=new Set();
 const cloud={
   async addItems(list){
@@ -1166,11 +1173,48 @@ async function persistShopping(){
   if(!sess)return true;
   try{await cloud.syncShopping();return true}catch(error){return false}
 }
-function addShoppingCandidate(name){
+function codeForName(name){
+  const n=normalize(name);
+  for(const [c,v] of Object.entries(names||{}))if(normalize(String(v))===n)return c;
+  const it=items.find(i=>i.code&&normalize(i.name)===n);
+  return it?it.code:'';
+}
+function addShoppingCandidate(name,code){
   if(shoppingList.some(item=>normalize(item.name)===normalize(name)))return false;
-  shoppingList.push({id:String(Date.now())+'-'+Math.random().toString(36).slice(2,7),name:name.trim(),price:'',checked:false});
+  shoppingList.push({id:String(Date.now())+'-'+Math.random().toString(36).slice(2,7),name:name.trim(),price:'',checked:false,code:String(code||codeForName(name)||'').replace(/\D/g,''),priceSrc:'',priceNote:''});
   renderShoppingList();
+  fillPrices();
   return true;
+}
+// ===== Prix automatiques (Open Prices, par code-barres) =====
+const monthYear=d=>{try{return new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{month:'short',year:'numeric'})}catch(e){return ''}};
+async function fetchPrice(code){
+  if(!sb||!me)return null;
+  try{
+    const {data,error}=await sb.functions.invoke('frigo-prices',{body:{code}});
+    if(error)return null;
+    return data&&data.found?data:{found:false};
+  }catch(e){return null}
+}
+let priceBusy=false;
+async function fillPrices(force){
+  if(priceBusy||!sb||!me)return;
+  priceBusy=true;
+  try{
+    let changed=false;
+    for(const it of shoppingList){
+      if(!it.code||it.price!==''||(it.priceSrc&&!force))continue;
+      if(force&&it.priceSrc==='manual')continue;
+      const r=await fetchPrice(it.code);
+      if(r===null)continue;
+      if(r.found){
+        it.price=String(r.price);it.priceSrc='auto';
+        it.priceNote=[r.shop,r.city,r.date?monthYear(r.date):''].filter(Boolean).join(' · ');
+      }else{it.priceSrc='none';it.priceNote=''}
+      changed=true;
+    }
+    if(changed){renderShoppingList();await persistShopping()}
+  }finally{priceBusy=false}
 }
 function renderShoppingSummary(){
   const checked=shoppingList.filter(item=>item.checked);
@@ -1178,10 +1222,11 @@ function renderShoppingSummary(){
   const total=priced.reduce((sum,item)=>sum+Number(item.price),0);
   $('#shoppingTotal').textContent=new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(total);
   const missing=checked.length-priced.length;
-  $('#shoppingSummaryText').textContent=!checked.length?'Coche des articles et renseigne leur prix.':missing?`${priced.length} prix compté${priced.length===1?'':'s'} · ${missing} prix à renseigner.`:`${checked.length} article${checked.length===1?'':'s'} coché${checked.length===1?'':'s'} pris en compte.`;
+  const hasAuto=checked.some(item=>item.priceSrc==='auto'&&item.price!=='');
+  $('#shoppingSummaryText').textContent=(!checked.length?'Coche des articles et renseigne leur prix.':missing?`${priced.length} prix compté${priced.length===1?'':'s'} · ${missing} prix à renseigner.`:`${checked.length} article${checked.length===1?'':'s'} coché${checked.length===1?'':'s'} pris en compte.`)+(hasAuto?' Prix indicatifs (Open Prices).':'');
 }
 function renderShoppingList(){
-  $('#shoppingItems').innerHTML=shoppingList.map(item=>`<li class="shopping-entry"><input type="checkbox" data-shopping-check="${esc(item.id)}" ${item.checked?'checked':''} aria-label="Inclure ${esc(item.name)} dans le total"><span class="shopping-entry-name">${esc(item.name)}</span><label class="shopping-price"><input type="number" data-shopping-price="${esc(item.id)}" min="0" step="0.01" value="${esc(item.price)}" placeholder="0,00" aria-label="Prix estimé pour ${esc(item.name)}"><span>€</span></label><button type="button" data-shopping-remove="${esc(item.id)}" aria-label="Retirer ${esc(item.name)}">Retirer</button></li>`).join('');
+  $('#shoppingItems').innerHTML=shoppingList.map(item=>`<li class="shopping-entry"><input type="checkbox" data-shopping-check="${esc(item.id)}" ${item.checked?'checked':''} aria-label="Inclure ${esc(item.name)} dans le total"><span class="shopping-entry-name">${esc(item.name)}${item.priceSrc==='auto'&&item.price!==''?'<small class="price-note">Prix relevé : '+esc(item.priceNote||'magasin inconnu')+'</small>':''}</span><label class="shopping-price${item.priceSrc==='auto'?' auto':''}"><input type="number" data-shopping-price="${esc(item.id)}" min="0" step="0.01" value="${esc(item.price)}" placeholder="0,00" aria-label="Prix estimé pour ${esc(item.name)}"><span>€</span></label><button type="button" data-shopping-remove="${esc(item.id)}" aria-label="Retirer ${esc(item.name)}">Retirer</button></li>`).join('');
   $('#shoppingEmpty').hidden=shoppingList.length>0;
   $('#shoppingTabCount').textContent=shoppingList.length?String(shoppingList.length):'';
   $('#shoppingTabCount').hidden=!shoppingList.length;
@@ -1360,7 +1405,10 @@ $('#shoppingAddForm').addEventListener('submit',async e=>{
 $('#shoppingItems').addEventListener('input',e=>{
   const id=e.target.dataset.shoppingPrice;if(!id)return;
   const item=shoppingList.find(entry=>entry.id===id);if(!item)return;
-  item.price=e.target.value;renderShoppingSummary();
+  item.price=e.target.value;item.priceSrc='manual';item.priceNote='';
+  const note=e.target.closest('li').querySelector('.price-note');if(note)note.remove();
+  e.target.closest('.shopping-price').classList.remove('auto');
+  renderShoppingSummary();
 });
 $('#shoppingItems').addEventListener('change',async e=>{
   const id=e.target.dataset.shoppingCheck||e.target.dataset.shoppingPrice;if(!id)return;
@@ -1376,6 +1424,14 @@ $('#shoppingItems').addEventListener('click',async e=>{
   renderShoppingList();
   if(!await persistShopping())msg('Modification gardée sur cet appareil, mais synchronisation indisponible.');
 });
+$('#refreshPrices').onclick=async()=>{
+  if(!me){msg('Connecte-toi (onglet Profil) pour récupérer les prix automatiquement.');return}
+  const n=shoppingList.filter(i=>i.code&&i.price===''&&i.priceSrc!=='manual').length;
+  if(!n){msg('Aucun article à chercher : seuls les produits scannés (avec code-barres) peuvent avoir un prix automatique.');return}
+  msg('Recherche des prix…');
+  await fillPrices(true);
+  msg('Prix mis à jour.');
+};
 $('#code').addEventListener('change',e=>{const c=e.target.value.trim();if(c)lookup(c)});
 $('#list').addEventListener('click',async e=>{
   const b=e.target.closest('button[data-a]');if(!b)return;
@@ -1388,7 +1444,7 @@ $('#list').addEventListener('click',async e=>{
   kind==='eat'?hist.eaten++:hist.thrown++;
   let suggested=false;
   if((Number(removedItem.qty)||1)>1){removedItem.qty=(Number(removedItem.qty)||1)-1;msg('« '+removedItem.name+' » : il en reste '+removedItem.qty+'.')}
-  else{items=items.filter(i=>i.id!==id);done[id]=kind;suggested=addShoppingCandidate(removedItem.name)}
+  else{items=items.filter(i=>i.id!==id);done[id]=kind;suggested=addShoppingCandidate(removedItem.name,removedItem.code)}
   save();render();
   if(suggested&&!await persistShopping())msg('Produit proposé dans la liste, mais synchronisation indisponible.');
 });
@@ -1444,7 +1500,7 @@ async function pull(){
       sb.from('frigo_items').select('id,code,name,expiry_date,added_by,qty').eq('fridge_id',fid).is('removed_kind',null),
       sb.rpc('frigo_stats',{p_fridge:fid}),
       sb.from('frigo_product_names').select('code,name').eq('fridge_id',fid),
-      sb.from('frigo_shopping').select('id,name,price,checked,created_at').eq('fridge_id',fid).order('created_at'),
+      sb.from('frigo_shopping').select('id,name,price,checked,created_at,code,price_src,price_note').eq('fridge_id',fid).order('created_at'),
       sb.from('frigo_meals').select('name,day').eq('fridge_id',fid).gte('day',day),
       sb.from('frigo_members').select('user_id,role,frigo_profiles(display_name)').eq('fridge_id',fid),
       sb.from('frigo_invites').select('id,email,expires_at').eq('fridge_id',fid).is('accepted_at',null).gt('expires_at',new Date().toISOString())
@@ -1454,7 +1510,8 @@ async function pull(){
     if(fid!==sess)return;   // on a changé de frigo entre-temps
     if(!(mb.data||[]).some(m=>m.user_id===me.id)){   // exclu ou frigo supprimé
       sess='';lsS('frigo_sess','');unsubscribe();load();render();renderShoppingList();renderProfile();
-      await loadFridges();frigoUi();frigoSay('Tu n’as plus accès à ce frigo.');return;
+      await loadFridges();const pf=personalFridge();if(pf){await setFridge(pf.id);frigoSay('Tu n’as plus accès à ce frigo : retour à ton frigo perso.');return}
+      frigoUi();frigoSay('Tu n’as plus accès à ce frigo.');return;
     }
     invites=iv&&!iv.error?(iv.data||[]):[];
     members={};(mb.data||[]).forEach(m=>{members[m.user_id]={name:(m.frigo_profiles&&m.frigo_profiles.display_name)||'Membre',role:m.role}});
@@ -1462,8 +1519,9 @@ async function pull(){
     const s0=(stt&&!stt.error&&stt.data&&stt.data[0])||{};hist={eaten:Number(s0.eaten)||0,thrown:Number(s0.thrown)||0};
     names={};(nm.data||[]).forEach(r=>{names[r.code]=r.name});
     mealHistory=(ml.data||[]).map(r=>({name:r.name,date:r.day}));
-    shoppingList=(sh.data||[]).map(r=>({id:String(r.id),name:String(r.name).slice(0,80),price:r.price==null?'':String(Number(r.price)),checked:r.checked===true}));
+    shoppingList=(sh.data||[]).map(r=>({id:String(r.id),name:String(r.name).slice(0,80),price:r.price==null?'':String(Number(r.price)),checked:r.checked===true,code:r.code||'',priceSrc:r.price_src||'',priceNote:r.price_note||''}));
     save();render();
+    fillPrices();
     const typing=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#shoppingItems');
     if(!typing)renderShoppingList();
     renderSuggestions();
@@ -1632,6 +1690,7 @@ function acRenderMode(){
   q('acForgot').hidden=acMode!=='in';
 }
 const curFridge=()=>fridges.find(f=>f.id===sess)||null;
+const personalFridge=()=>fridges.find(f=>f.kind==='personal')||null;
 
 function frigoUi(){
   const logged=!!me;
@@ -1642,8 +1701,9 @@ function frigoUi(){
   const bn=q('acInviteBanner');bn.textContent=inviteText;bn.hidden=!(inviteText&&!logged);
   const badge=q('fridgeBadge'),f=curFridge();
   if(logged&&sess&&f){
-    const n=Object.keys(members).length;
-    badge.textContent='🔗 Frigo partagé « '+f.name+' »'+(n>1?' · '+n+' membres':'');badge.hidden=false;
+    if(f.kind==='personal')badge.textContent='🔒 Mon frigo perso';
+    else{const n=Object.keys(members).length;badge.textContent='🔗 Frigo partagé « '+f.name+' »'+(n>1?' · '+n+' membres':'')}
+    badge.hidden=false;
   }else badge.hidden=true;
   if(!logged)return;
   q('acWho').textContent='Connecté : '+(meName||me.email||'');
@@ -1652,12 +1712,13 @@ function frigoUi(){
   if(sig!==selSig){
     selSig=sig;
     const sel=q('acFridgeSel');
-    sel.innerHTML='<option value="">Frigo personnel (cet appareil)</option>'+fridges.map(x=>'<option value="'+x.id+'">'+esc(x.name)+(x.role==='owner'?' (propriétaire)':'')+'</option>').join('');
+    sel.innerHTML=fridges.map(x=>'<option value="'+x.id+'">'+(x.kind==='personal'?'🔒 Mon frigo perso':esc(x.name)+(x.role==='owner'?' (propriétaire)':''))+'</option>').join('');
     sel.value=sess;
   }
   q('acFridgeBox').hidden=!(sess&&f);
-  q('acCopyHint').hidden=fridges.length>0;
-  if(sess&&f){
+  const personal=!!(f&&f.kind==='personal');
+  q('acPersonalNote').hidden=!personal;q('acShared').hidden=personal;
+  if(sess&&f&&!personal){
     q('shCode').textContent=f.invite_code||'';
     const isOwner=f.role==='owner';
     q('acOwnerTools').hidden=!isOwner;
@@ -1680,9 +1741,9 @@ setInterval(stateUi,3000);
 async function loadFridges(){
   if(!sb||!me){fridges=[];return}
   try{
-    const {data,error}=await sb.from('frigo_members').select('role,frigo_fridges(id,name,invite_code,owner_id)').eq('user_id',me.id);
+    const {data,error}=await sb.from('frigo_members').select('role,frigo_fridges(id,name,invite_code,owner_id,kind)').eq('user_id',me.id);
     if(error)throw error;
-    fridges=(data||[]).filter(m=>m.frigo_fridges).map(m=>({...m.frigo_fridges,role:m.role})).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+    fridges=(data||[]).filter(m=>m.frigo_fridges).map(m=>({...m.frigo_fridges,role:m.role})).sort((a,b)=>(a.kind==='personal'?0:1)-(b.kind==='personal'?0:1)||a.name.localeCompare(b.name,'fr'));
     lsS('frigo_fridges_cache',JSON.stringify(fridges));
   }catch(e){
     try{fridges=JSON.parse(lsG('frigo_fridges_cache')||'[]')}catch(_){fridges=[]}
@@ -1710,7 +1771,6 @@ function cloudSaveProfileSoon(){clearTimeout(profTimer);profTimer=setTimeout(clo
 async function setFridge(id,explicit){
   id=id||'';
   if(id===sess&&(id===''||rt))return;
-  if(explicit&&id==='')lsS('frigo_pref','personal');else if(id)lsS('frigo_pref','');
   lastFridge=id||null;
   if(sb&&me)sb.from('frigo_profiles').update({last_fridge:lastFridge}).eq('id',me.id).then(()=>{},()=>{});
   unsubscribe();
@@ -1737,9 +1797,16 @@ async function onSession(session){
     if(!error&&fid){lsS('frigo_invite','');inviteText='';await loadFridges();sess=fid;lsS('frigo_sess',sess);frigoSay('Invitation acceptée : tu as rejoint le frigo.')}
     else if(error&&/invite_invalid/.test(error.message)){lsS('frigo_invite','');inviteText='';frigoSay('Cette invitation n’est plus valable. Demande-en une nouvelle à la personne qui t’a invité.')}
   }
-  if(sess&&!fridges.some(f=>f.id===sess)&&navigator.onLine!==false){sess='';lsS('frigo_sess','')}
-  if(!sess&&fridges.length&&lsG('frigo_pref')!=='personal'){
-    const pick=fridges.find(f=>f.id===lastFridge)||fridges[0];
+  if(!personalFridge()&&navigator.onLine!==false){
+    try{await sb.rpc('frigo_ensure_personal');await loadFridges()}catch(e){}
+  }
+  // Le frigo local de cet appareil rejoint le frigo perso du premier compte qui s'y connecte
+  const per=personalFridge(),claimed=lsG('frigo_local_claimed');
+  if(per&&(!claimed||claimed===me.id)){
+    try{await uploadLocalFridge(per.id);lsS('frigo_local_claimed',me.id)}catch(e){}
+  }
+  if(fridges.length&&!fridges.some(f=>f.id===sess)){
+    const pick=fridges.find(f=>f.id===lastFridge)||personalFridge()||fridges[0];
     sess=pick.id;lsS('frigo_sess',sess);
   }
   load();render();renderShoppingList();renderProfile();
@@ -1792,10 +1859,8 @@ q('acCreate').onclick=async()=>{
   if(!sb||!me)return;
   const name=q('acFridgeName').value.trim().slice(0,40)||'Mon frigo';
   frigoSay('Création…');
-  const first=!fridges.length;
   const {data:fid,error}=await sb.rpc('frigo_create',{p_name:name});
   if(error){frigoSay(frErr(error));return}
-  if(first){try{await uploadLocalFridge(fid)}catch(e){frigoSay('Frigo créé, mais la copie de ton frigo local a échoué.')}}
   await loadFridges();await setFridge(fid);
   q('acFridgeName').value='';q('acNew').open=false;
   frigoSay('Frigo « '+name+' » créé. Donne le code d’invitation à tes proches.');
@@ -1845,18 +1910,18 @@ q('acMembers').onclick=async e=>{
   await pull();frigoSay('Membre retiré.');
 };
 q('acLeave').onclick=async()=>{
-  const f=curFridge();if(!f)return;
+  const f=curFridge();if(!f||f.kind==='personal')return;
   if(f.role==='owner'){
     if(Object.keys(members).length>1){frigoSay('Tu es propriétaire : retire d’abord les autres membres, ou supprime le frigo une fois seul.');return}
     if(!confirm('Supprimer définitivement « '+f.name+' » et tout son contenu ?'))return;
     const {error}=await sb.from('frigo_fridges').delete().eq('id',f.id);
     if(error){frigoSay(frErr(error));return}
   }else{
-    if(!confirm('Quitter « '+f.name+' » ? Tu retrouveras ton frigo personnel sur cet appareil.'))return;
+    if(!confirm('Quitter « '+f.name+' » ? Tu retrouveras ton frigo perso.'))return;
     const {error}=await sb.from('frigo_members').delete().eq('fridge_id',f.id).eq('user_id',me.id);
     if(error){frigoSay(frErr(error));return}
   }
-  await loadFridges();await setFridge('');frigoSay('Frigo quitté.');
+  await loadFridges();await setFridge((personalFridge()||{}).id||'');frigoSay('Frigo quitté.');
 };
 
 q('acInvite').onclick=async()=>{
